@@ -1,8 +1,19 @@
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import HomePage from "./pages/HomePage";
+import OcrPage from "./pages/OcrPage";
+import TxtPage from "./pages/TxtPage";
+import ChiViPage from "./pages/Chivi";
+
 function App() {
   return (
-    <div>
-      <h1 className="bg-emerald-800">Chivi align</h1>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/ocr" element={<OcrPage />} />
+        <Route path="/txt" element={<TxtPage />} />
+        <Route path="/chivi" element={<ChiViPage />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
