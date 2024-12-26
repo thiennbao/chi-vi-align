@@ -1,9 +1,12 @@
+import OcrTool from "../components/OcrTool";
 import Layout from "../layouts/Layout";
 
 const OcrPage = () => {
   return (
     <Layout>
-      <h1>Ocr page</h1>
+      <div className="pt-16 h-screen flex justify-center items-center">
+        <OcrTool className="w-screen h-3/4 mx-48 grid grid-cols-3 gap-6" />
+      </div>
     </Layout>
   );
 };
