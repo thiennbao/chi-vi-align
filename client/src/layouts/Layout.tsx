@@ -3,9 +3,9 @@ import Header from "./Header";
 
 const Layout = ({ children }: HTMLAttributes<HTMLDivElement>) => {
   return (
-    <div className="bg-dark text-neutral-200 min-h-screen">
+    <div className="bg-dark text-neutral-200">
       <Header />
-      {children}
+      <main className="min-h-screen">{children}</main>
     </div>
   );
 };
