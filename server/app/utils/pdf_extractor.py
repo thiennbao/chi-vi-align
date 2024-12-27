@@ -2,6 +2,8 @@ import fitz
 import os
 import base64
 import requests
+import uuid
+
 
 class PDFExtractor:
   def __init__(self, direction: str = 'auto', size: int = 0, from_page: int = 1, to_page: int = None):
@@ -17,7 +19,6 @@ class PDFExtractor:
       'return_choices': True
     }
     self.result = []
-    self.fail = []
     
 
   # Call Kandianguji API to OCR image
@@ -34,14 +35,14 @@ class PDFExtractor:
       return data
     except Exception as e:
       print(f"An error occurred: {e}")
-      return self._ocr_image(image_bytes, retry - 1) if retry > 0 else None
+      return self._ocr_image(image_bytes, retry - 1) if retry > 0 else []
     
 
   # Extract PDF file
   def extract_pdf(self, file):
     # Create temp file
     os.makedirs('temp', exist_ok=True)
-    file_path = f'temp/{file.filename}'
+    file_path = f'temp/{uuid.uuid4()}.pdf'
     file.save(file_path)
     
     # Process file
@@ -54,10 +55,7 @@ class PDFExtractor:
         base_image = pdf_file.extract_image(image_list[0][0])
         image_bytes = base_image['image']
         data = self._ocr_image(image_bytes, retry=3)
-    if data:
-      self.result += data
-    else:
-      self.fail.append(page_index + 1)
+        self.result += data
       
     # Clear temp
     pdf_file.close()

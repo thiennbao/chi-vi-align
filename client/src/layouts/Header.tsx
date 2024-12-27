@@ -9,10 +9,15 @@ const Header = () => {
           <img src="/logo.svg" className="h-full" />
         </Link>
       </div>
-      <nav className="flex font-[500] text-sm divide-x divide-neutral-500 -mx-4 *:px-4">
-        <Link to="/tool" className="hover:text-primary transition">
-          Tool
-        </Link>
+      <nav className="flex items-center font-[500] text-sm divide-x divide-neutral-500 -mx-4 *:px-4">
+        <div className="flex gap-4">
+          <Link to="/tool" className="hover:text-primary transition">
+            Tool
+          </Link>
+          <Link to="" className="hover:text-primary transition">
+            Result
+          </Link>
+        </div>
         <div className="flex gap-4">
           <Link to="" className="hover:text-primary transition">
             <Icon icon="mdi:github" width="24" height="24" />

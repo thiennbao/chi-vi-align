@@ -35,7 +35,7 @@ const ToolSettings = ({ tab, config, setConfig }: Props) => {
             </div>
             <input
               type="number"
-              value={config.size}
+              value={config.size || ""}
               onChange={(e) => setConfig({ ...config, size: Number(e.target.value) || 0 })}
               placeholder="No resizing"
               className="w-full outline-none border-none rounded bg-dark-3 px-4 py-2"
@@ -49,14 +49,14 @@ const ToolSettings = ({ tab, config, setConfig }: Props) => {
             <div className="flex gap-2">
               <input
                 type="number"
-                value={config.from}
+                value={config.from || ""}
                 onChange={(e) => setConfig({ ...config, from: Number(e.target.value) || 0 })}
                 placeholder="From page"
                 className="w-full outline-none border-none rounded bg-dark-3 px-4 py-2"
               />
               <input
                 type="number"
-                value={config.to}
+                value={config.to || ""}
                 onChange={(e) => setConfig({ ...config, to: Number(e.target.value) || 0 })}
                 placeholder="To page"
                 className="w-full outline-none border-none rounded bg-dark-3 px-4 py-2"
@@ -73,7 +73,7 @@ const ToolSettings = ({ tab, config, setConfig }: Props) => {
               <span>Sentence splitters</span>
             </div>
             <input
-              value={config.chiSplit}
+              value={config.chiSplit || ""}
               onChange={(e) => setConfig({ ...config, chiSplit: e.target.value })}
               placeholder="。？！"
               className="w-full outline-none border-none rounded bg-dark-3 px-4 py-2"
@@ -89,7 +89,7 @@ const ToolSettings = ({ tab, config, setConfig }: Props) => {
               <span>Sentence splitters</span>
             </div>
             <input
-              value={config.viSplit}
+              value={config.viSplit || ""}
               onChange={(e) => setConfig({ ...config, viSplit: e.target.value })}
               placeholder=". ? ! ;"
               className="w-full outline-none border-none rounded bg-dark-3 px-4 py-2"
