@@ -1,7 +1,7 @@
 import OcrTool from "../components/OcrTool";
 import Layout from "../layouts/Layout";
 
-const OcrPage = () => {
+const ToolPage = () => {
   return (
     <Layout>
       <div className="pt-16 h-screen flex justify-center items-center">
@@ -11,4 +11,4 @@ const OcrPage = () => {
   );
 };
 
-export default OcrPage;
+export default ToolPage;
