@@ -19,7 +19,7 @@ class Sentencizer():
     # Process file
     with open(file_path, 'r', encoding='utf-8') as file:
       for line in file:
-        self.result += [s for s in re.split(self.split, line.strip()) if s]
+        self.result += [s.strip() for s in re.split(self.split, line.strip()) if s.strip()]
 
     # Clear temp
     os.remove(file_path)

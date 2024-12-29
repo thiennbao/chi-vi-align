@@ -24,27 +24,42 @@ const Tool = ({ ...props }: HTMLAttributes<HTMLDivElement>) => {
 
   const handleSubmit = async () => {
     try {
-      // Ocr pdf
-      const ocrData = new FormData();
-      ocrData.append("file", file || "");
-      ocrData.append("direction", config.dir ? "vertical" : "horizontal");
-      ocrData.append("size", config.size ? String(Math.max(0, config.size)) : "");
-      ocrData.append("from", config.from ? String(Math.max(1, config.from)) : "");
-      ocrData.append("to", config.to ? String(Math.max(1, config.to)) : "");
-      const ocrRes = await axios.post(`${import.meta.env.VITE_SERVER_URL}/api/ocr`, ocrData);
-      const workdirId: string = ocrRes.data.id;
+      // // Ocr pdf
+      // const ocrData = new FormData();
+      // ocrData.append("file", file || "");
+      // ocrData.append("direction", config.dir ? "vertical" : "horizontal");
+      // ocrData.append("size", config.size ? String(Math.max(0, config.size)) : "");
+      // ocrData.append("from", config.from ? String(Math.max(1, config.from)) : "");
+      // ocrData.append("to", config.to ? String(Math.max(1, config.to)) : "");
+      // const ocrRes = await axios.post(`${import.meta.env.VITE_SERVER_URL}/api/ocr`, ocrData);
+      // const workdirId: string = ocrRes.data.id;
+      const workdirId = "test"
 
-      // Sentencize Chinese text
-      const chiData = new FormData();
-      const chiBlob = new Blob([chi], { type: "text/plain" });
-      const chiFile = new File([chiBlob], ".txt", { type: "text/plain" });
-      chiData.append("id", workdirId);
-      chiData.append("text", chiFile);
-      chiData.append("split", config.chiSplit || "");
-      const chiRes = await axios.post(`${import.meta.env.VITE_SERVER_URL}/api/sen`, chiData);
+      // // Sentencize Chinese text
+      // const chiData = new FormData();
+      // const chiBlob = new Blob([chi], { type: "text/plain" });
+      // const chiFile = new File([chiBlob], ".txt", { type: "text/plain" });
+      // chiData.append("id", workdirId);
+      // chiData.append("text", chiFile);
+      // chiData.append("split", config.chiSplit || "．！？");
+      // await axios.post(`${import.meta.env.VITE_SERVER_URL}/api/sen`, chiData);
 
-      // Sentencize Vietnamese text
-      console.log(chiRes.data);
+      // // Sentencize Vietnamese text
+      // const viData = new FormData();
+      // const viBlob = new Blob([vi], { type: "text/plain" });
+      // const viFile = new File([viBlob], ".txt", { type: "text/plain" });
+      // viData.append("id", workdirId);
+      // viData.append("text", viFile);
+      // viData.append("split", config.viSplit || ".!?;");
+      // viData.append("lang", "vi");
+      // await axios.post(`${import.meta.env.VITE_SERVER_URL}/api/sen`, viData);
+      
+      // Align Chinese text
+      await axios.post(`${import.meta.env.VITE_SERVER_URL}/api/chi`, {id: workdirId})
+
+      // Align Vietnamese text
+      await axios.post(`${import.meta.env.VITE_SERVER_URL}/api/vi`, {id: workdirId})
+
     } catch (error: any) {
       console.log(error.response.data);
     }

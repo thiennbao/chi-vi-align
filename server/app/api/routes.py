@@ -6,6 +6,8 @@ import json
 from app.api import api_blueprint
 from app.utils.pdf_extractor import PDFExtractor
 from app.utils.sentencizer import Sentencizer
+from app.utils.med_aligner import MEDAligner
+
 
 
 @api_blueprint.route('/ocr', methods=['POST'])
@@ -59,6 +61,7 @@ def ocr():
     return jsonify({'message': 'Internal server error.'}), 500
   
   
+  
 @api_blueprint.route('/sen', methods=['POST'])
 def sentencize():
   try:
@@ -71,6 +74,7 @@ def sentencize():
     # Validate request splitter
     split = request.form.get('split')
     split = rf'[{split}]' if split else r'[^\w]'
+    lang = request.form.get('lang') or 'chi'
     
     # Sentencize file
     print(f'[*] Processing ocr: {text}, {split}')
@@ -81,7 +85,7 @@ def sentencize():
     id = request.form.get('id') or uuid.uuid4()
     workdir = f'data/{id}'
     os.makedirs(workdir, exist_ok=True)
-    with open(f'{workdir}/chi.json', 'w') as json_file:
+    with open(f'{workdir}/{lang}.json', 'w') as json_file:
       json.dump(sentencizer.result, json_file)
     
     return jsonify({'message': 'Sentencize successfully', 'id': id}), 200
@@ -94,8 +98,52 @@ def sentencize():
 
 @api_blueprint.route('/chi', methods=['POST'])
 def chi_align():
-  return "Chi align"
+  try:
+    # Validate request
+    if 'id' not in request.get_json():
+      return jsonify({'message': 'No ID provided'}), 400
+    id = request.get_json()['id']
+    
+    # Align
+    workdir = f'data/{id}'
+    print(f'[*] Processing Chinese align: {id}')
+    med_alginer = MEDAligner()
+    med_alginer.align_chi(f'{workdir}/chi.json', f'{workdir}/ocr.json')
+    
+    # Save data
+    os.makedirs(workdir, exist_ok=True)
+    with open(f'{workdir}/chi-align.json', 'w') as json_file:
+      json.dump(med_alginer.result, json_file)
+    
+    return jsonify({'message': 'Align successfully', 'id': id}), 200
+  
+  except Exception as e:
+    print(f"An error occurred: {e}")
+    return jsonify({'message': 'Internal server error.'}), 500
+
+
 
 @api_blueprint.route('/vi', methods=['POST'])
 def vi_align():
-  return "Vi align"
+  try:
+    # Validate request
+    if 'id' not in request.get_json():
+      return jsonify({'message': 'No ID provided'}), 400
+    id = request.get_json()['id']
+    
+    # Align
+    workdir = f'data/{id}'
+    print(f'[*] Processing Vietnamese align: {id}')
+    med_alginer = MEDAligner()
+    med_alginer.align_vi(f'{workdir}/vi.json', f'{workdir}/chi-align.json')
+    
+    # Save data
+    os.makedirs(workdir, exist_ok=True)
+    with open(f'{workdir}/vi-align.json', 'w') as json_file:
+      json.dump(med_alginer.result, json_file)
+    
+    return jsonify({'message': 'Align successfully', 'id': id}), 200
+  
+  except Exception as e:
+    print(f"An error occurred: {e}")
+    return jsonify({'message': 'Internal server error.'}), 500
