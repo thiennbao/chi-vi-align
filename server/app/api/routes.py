@@ -7,6 +7,7 @@ from app.api import api_blueprint
 from app.utils.pdf_extractor import PDFExtractor
 from app.utils.sentencizer import Sentencizer
 from app.utils.med_aligner import MEDAligner
+from app.utils.api_aligner import APIAligner
 
 
 
@@ -42,19 +43,20 @@ def ocr():
     except:
       return jsonify({'message': 'Page range must be a number'}), 400
     
+    id = request.form.get('id') or uuid.uuid4()
+    workdir = f'data/{id}'
+    
     # Ocr file
-    print(f'[*] Processing ocr: {file}, {direction}, {size}, {from_page}, {to_page}')
+    print(f'[*] Processing OCR, ID: {id}')
     pdf_extractor = PDFExtractor(direction, size, from_page, to_page)
     pdf_extractor.extract_pdf(file)
     
     # Save data
-    id = request.form.get('id') or uuid.uuid4()
-    workdir = f'data/{id}'
     os.makedirs(workdir, exist_ok=True)
     with open(f'{workdir}/ocr.json', 'w') as json_file:
       json.dump(pdf_extractor.result, json_file)
 
-    return jsonify({'message': 'Ocr file successfully', 'id': id}), 200
+    return jsonify({'message': 'OCR file successfully', 'id': id}), 200
   
   except Exception as e:
     print(f"An error occurred: {e}")
@@ -66,56 +68,68 @@ def ocr():
 def sentencize():
   try:
     # Validate request
-    if 'text' not in request.files:
-      return jsonify({'message': 'No text provided'}), 400
-    text = request.files['text']
-    if not text.filename.endswith('.txt'):
+    if 'chiText' not in request.files:
+      return jsonify({'message': 'No Chinese text provided'}), 400
+    chi_text = request.files['chiText']
+    if 'viText' not in request.files:
+      return jsonify({'message': 'No Vietnamese text provided'}), 400
+    vi_text = request.files['viText']
+    if not chi_text.filename.endswith('.txt') or not vi_text.filename.endswith('.txt'):
       return jsonify({'message': 'Invalid file type, only TXT is allowed'}), 400
     # Validate request splitter
-    split = request.form.get('split')
-    split = rf'[{split}]' if split else r'[^\w]'
-    lang = request.form.get('lang') or 'chi'
+    chi_split = request.form.get('chiSplit')
+    chi_split = rf'[{chi_split}]' if chi_split else r'[^\w]'
+    vi_split = request.form.get('viSplit')
+    vi_split = rf'[{vi_split}]' if vi_split else r'[^\w]'
     
-    # Sentencize file
-    print(f'[*] Processing ocr: {text}, {split}')
-    sentencizer = Sentencizer(split)
-    sentencizer.sentencize(text)
-    
-    # Save data
     id = request.form.get('id') or uuid.uuid4()
     workdir = f'data/{id}'
     os.makedirs(workdir, exist_ok=True)
-    with open(f'{workdir}/{lang}.json', 'w') as json_file:
-      json.dump(sentencizer.result, json_file)
     
-    return jsonify({'message': 'Sentencize successfully', 'id': id}), 200
+    # Sentencize texts
+    print(f'[*] Processing Sentencizing, ID: {id}')
+    chi_sentencizer = Sentencizer(chi_split)
+    chi_sentencizer.sentencize(chi_text)
+    vi_sentencizer = Sentencizer(vi_split)
+    vi_sentencizer.sentencize(vi_text)
+    # Save data
+    with open(f'{workdir}/chi.json', 'w') as json_file:
+      json.dump(chi_sentencizer.result, json_file)
+    with open(f'{workdir}/vi.json', 'w') as json_file:
+      json.dump(vi_sentencizer.result, json_file)
+    
+    return jsonify({'message': 'Sentencized successfully', 'id': id}), 200
   
   except Exception as e:
     print(f"An error occurred: {e}")
     return jsonify({'message': 'Internal server error.'}), 500
 
-    
 
-@api_blueprint.route('/chi', methods=['POST'])
+
+@api_blueprint.route('/chi-align', methods=['POST'])
 def chi_align():
   try:
     # Validate request
     if 'id' not in request.get_json():
       return jsonify({'message': 'No ID provided'}), 400
+    
     id = request.get_json()['id']
+    workdir = f'data/{id}'
     
     # Align
-    workdir = f'data/{id}'
-    print(f'[*] Processing Chinese align: {id}')
+    print(f'[*] Processing Chinese Aligning, ID: {id}')
     med_alginer = MEDAligner()
-    med_alginer.align_chi(f'{workdir}/chi.json', f'{workdir}/ocr.json')
+    try:
+      med_alginer.align(f'{workdir}/chi.json', f'{workdir}/ocr.json')
+    except FileNotFoundError:
+      return jsonify({'message': 'ID not found'}), 404
     
     # Save data
     os.makedirs(workdir, exist_ok=True)
     with open(f'{workdir}/chi-align.json', 'w') as json_file:
       json.dump(med_alginer.result, json_file)
     
-    return jsonify({'message': 'Align successfully', 'id': id}), 200
+    return jsonify({'message': 'Aligned successfully', 'id': id}), 200
   
   except Exception as e:
     print(f"An error occurred: {e}")
@@ -123,26 +137,32 @@ def chi_align():
 
 
 
-@api_blueprint.route('/vi', methods=['POST'])
+@api_blueprint.route('/vi-align', methods=['POST'])
 def vi_align():
   try:
     # Validate request
     if 'id' not in request.get_json():
       return jsonify({'message': 'No ID provided'}), 400
+    
     id = request.get_json()['id']
+    workdir = f'data/{id}'
     
     # Align
-    workdir = f'data/{id}'
-    print(f'[*] Processing Vietnamese align: {id}')
-    med_alginer = MEDAligner()
-    med_alginer.align_vi(f'{workdir}/vi.json', f'{workdir}/chi-align.json')
+    print(f'[*] Processing Vietnamese Aligning: {id}')
+    api_aligner = APIAligner()
+    try:
+      api_aligner.align(f'{workdir}/vi.json', f'{workdir}/chi-align.json')
+    except FileNotFoundError:
+      api_aligner.align(f'{workdir}/vi.json', f'{workdir}/ocr.json')
+    except FileNotFoundError:
+      return jsonify({'message': 'ID not found'}), 404
     
     # Save data
     os.makedirs(workdir, exist_ok=True)
     with open(f'{workdir}/vi-align.json', 'w') as json_file:
-      json.dump(med_alginer.result, json_file)
+      json.dump(api_aligner.result, json_file)
     
-    return jsonify({'message': 'Align successfully', 'id': id}), 200
+    return jsonify({'message': 'Aligned successfully', 'id': id}), 200
   
   except Exception as e:
     print(f"An error occurred: {e}")

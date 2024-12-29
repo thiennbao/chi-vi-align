@@ -4,3 +4,4 @@ python-dotenv
 requests
 PyMuPDF
 Levenshtein
+google-generativeai

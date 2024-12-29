@@ -11,7 +11,7 @@ class MEDAligner:
     self.result = []
     
     
-  def align_chi(self, src_file_path, des_file_path):
+  def align(self, src_file_path: str, des_file_path: str):
     # Read data
     with open(src_file_path, 'r', encoding='utf-8') as src_file:
       src = json.load(src_file)
@@ -20,12 +20,14 @@ class MEDAligner:
       self.result = copy.deepcopy(des)
 
     # Align
-    for i, des_text in enumerate(des):
-      des_text = des_text['ocr']
+    for i, des_box in enumerate(des):
+      des_text = des_box['ocr']
       pos = i / len(des)
+      
       candidates_range = range(max(int((pos - self.candidates / 2) * len(src)), 0), min(int((pos + self.candidates / 2) * len(src)), len(src)))
       src_candidates = [src[i] for i in candidates_range]
       aligned = ''
+      
       for src_text in src_candidates:
         src_text = re.sub(r'[A-Z]|[^\w]', '', src_text)
         sim_ratio = ratio(src_text, des_text)
@@ -81,31 +83,3 @@ class MEDAligner:
       align_des.reverse()
       box['ocr_char_align'] = ''.join(align_src)
       box['chi_char_align'] = ''.join(align_des)
-
-
-      
-  def align_vi(self, src_file_path, des_file_path):
-    # Read data
-    with open(src_file_path, 'r', encoding='utf-8') as src_file:
-      src = json.load(src_file)
-    with open(des_file_path, 'r', encoding='utf-8') as des_file:
-      des = json.load(des_file)
-      self.result = copy.deepcopy(des)
-
-    # Align
-    for i, des_text in enumerate(des):
-      des_text = des_text['ocr']
-      pos = i / len(des)
-      candidates_range = range(max(int((pos - self.candidates / 2) * len(src)), 0), min(int((pos + self.candidates / 2) * len(src)), len(src)))
-      src_candidates = [src[i] for i in candidates_range]
-      aligned = ''
-      for src_text in src_candidates:
-        src_text = re.sub(r'[A-Z]|[^\w]', '', src_text)
-        sim_ratio = ratio(src_text, des_text)
-        sim_jaro = jaro(src_text, des_text)
-        if sim_ratio > self.threshold or sim_jaro > self.threshold:
-          aligned += src_text
-          matches = Counter(des_text) & Counter(src_text)
-          for char, count in matches.items():
-            des_text = des_text.replace(char, '', count)
-      self.result[i]['vi_aligned'] = aligned

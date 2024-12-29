@@ -24,51 +24,54 @@ const Tool = ({ ...props }: HTMLAttributes<HTMLDivElement>) => {
 
   const handleSubmit = async () => {
     try {
-      // // Ocr pdf
-      // const ocrData = new FormData();
-      // ocrData.append("file", file || "");
-      // ocrData.append("direction", config.dir ? "vertical" : "horizontal");
-      // ocrData.append("size", config.size ? String(Math.max(0, config.size)) : "");
-      // ocrData.append("from", config.from ? String(Math.max(1, config.from)) : "");
-      // ocrData.append("to", config.to ? String(Math.max(1, config.to)) : "");
+      // Step 1: Ocr pdf
+      const ocrData = new FormData();
+      ocrData.append("file", file || "");
+      ocrData.append("direction", config.dir ? "vertical" : "horizontal");
+      ocrData.append("size", config.size ? String(Math.max(0, config.size)) : "");
+      ocrData.append("from", config.from ? String(Math.max(1, config.from)) : "");
+      ocrData.append("to", config.to ? String(Math.max(1, config.to)) : "");
       // const ocrRes = await axios.post(`${import.meta.env.VITE_SERVER_URL}/api/ocr`, ocrData);
-      // const workdirId: string = ocrRes.data.id;
-      const workdirId = "test"
+      // const workdirId: string = ocrRes.data.i
+      const workdirId = "test";
 
-      // // Sentencize Chinese text
-      // const chiData = new FormData();
-      // const chiBlob = new Blob([chi], { type: "text/plain" });
-      // const chiFile = new File([chiBlob], ".txt", { type: "text/plain" });
-      // chiData.append("id", workdirId);
-      // chiData.append("text", chiFile);
-      // chiData.append("split", config.chiSplit || "．！？");
-      // await axios.post(`${import.meta.env.VITE_SERVER_URL}/api/sen`, chiData);
+      // Step 2: Sentencize Chinese text
+      const senData = new FormData();
+      senData.append("id", workdirId);
+      const chiBlob = new Blob([chi], { type: "text/plain" });
+      const chiFile = new File([chiBlob], ".txt", { type: "text/plain" });
+      const viBlob = new Blob([vi], { type: "text/plain" });
+      const viFile = new File([viBlob], ".txt", { type: "text/plain" });
+      senData.append("chiText", chiFile);
+      senData.append("viText", viFile);
+      senData.append("chiSplit", config.chiSplit || "．！？");
+      senData.append("viSplit", config.viSplit || ".!?;");
+      // await axios.post(`${import.meta.env.VITE_SERVER_URL}/api/sen`, senData);
 
-      // // Sentencize Vietnamese text
-      // const viData = new FormData();
-      // const viBlob = new Blob([vi], { type: "text/plain" });
-      // const viFile = new File([viBlob], ".txt", { type: "text/plain" });
-      // viData.append("id", workdirId);
-      // viData.append("text", viFile);
-      // viData.append("split", config.viSplit || ".!?;");
-      // viData.append("lang", "vi");
-      // await axios.post(`${import.meta.env.VITE_SERVER_URL}/api/sen`, viData);
-      
-      // Align Chinese text
-      await axios.post(`${import.meta.env.VITE_SERVER_URL}/api/chi`, {id: workdirId})
+      // Step 3: Align Chinese text
+      // await axios.post(`${import.meta.env.VITE_SERVER_URL}/api/chi-align`, { id: workdirId });
 
-      // Align Vietnamese text
-      await axios.post(`${import.meta.env.VITE_SERVER_URL}/api/vi`, {id: workdirId})
+      // Step 4: Align Vietnamese text
+      await axios.post(`${import.meta.env.VITE_SERVER_URL}/api/vi-align`, { id: workdirId });
 
+      // Display result
     } catch (error: any) {
       console.log(error.response.data);
     }
   };
 
   const progress = +Boolean(file) + +Boolean(chi) + +Boolean(vi);
-
   return (
-    <div {...props} className={clsx(props.className, "grid grid-cols-3 gap-6")}>
+    <div
+      {...props}
+      className={clsx(props.className, "grid grid-cols-3 gap-6 relative overflow-hidden")}
+    >
+      {/* {loading >= 0 && (
+        <ToolLoading
+          stage={loading}
+          className="absolute z-50 rounded-md w-full h-full bg-dark-2 bg-opacity-95"
+        />
+      )} */}
       <div className="col-span-2 bg-dark-2 rounded-lg p-4 overflow-hidden">
         {file ? (
           <div
