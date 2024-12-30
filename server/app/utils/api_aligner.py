@@ -48,8 +48,6 @@ class APIAligner():
       except Exception:
         self.result[i]['vi_aligned'] = ''
         self.result[i]['vi_trans'] = ''
-      print(i, self.result[i]['vi_aligned'])
-      print(i, self.result[i]['vi_trans'], '\n')
         
   def _match_and_trans(self, text: str, candidate_texts: list[str], retry: int = 0):
     try:

@@ -5,6 +5,7 @@ import PdfInput from "./PdfInput";
 import ToolSettings from "./ToolSettings";
 import PDFViewer from "./PdfViewer";
 import axios from "axios";
+import ToolLoading from "./ToolLoading";
 
 export interface Config {
   dir?: boolean;
@@ -20,22 +21,29 @@ const Tool = ({ ...props }: HTMLAttributes<HTMLDivElement>) => {
   const [file, setFile] = useState<File>();
   const [chi, setChi] = useState("");
   const [vi, setVi] = useState("");
-  const [config, setConfig] = useState<Config>({});
+  const [config, setConfig] = useState<Config>({
+    chiSplit: "，．！？",
+    viSplit: ",.!?;",
+  });
+  const [step, setStep] = useState(0);
 
   const handleSubmit = async () => {
     try {
+      // const workdirId = "test_dir";
+
       // Step 1: Ocr pdf
+      setStep(1);
       const ocrData = new FormData();
       ocrData.append("file", file || "");
-      ocrData.append("direction", config.dir ? "vertical" : "horizontal");
+      ocrData.append("direction", config.dir ? "horizontal" : "vertical");
       ocrData.append("size", config.size ? String(Math.max(0, config.size)) : "");
       ocrData.append("from", config.from ? String(Math.max(1, config.from)) : "");
       ocrData.append("to", config.to ? String(Math.max(1, config.to)) : "");
-      // const ocrRes = await axios.post(`${import.meta.env.VITE_SERVER_URL}/api/ocr`, ocrData);
-      // const workdirId: string = ocrRes.data.i
-      const workdirId = "test";
+      const ocrRes = await axios.post(`${import.meta.env.VITE_SERVER_URL}/api/ocr`, ocrData);
+      const workdirId: string = ocrRes.data.id;
 
       // Step 2: Sentencize Chinese text
+      setStep(2);
       const senData = new FormData();
       senData.append("id", workdirId);
       const chiBlob = new Blob([chi], { type: "text/plain" });
@@ -44,35 +52,46 @@ const Tool = ({ ...props }: HTMLAttributes<HTMLDivElement>) => {
       const viFile = new File([viBlob], ".txt", { type: "text/plain" });
       senData.append("chiText", chiFile);
       senData.append("viText", viFile);
-      senData.append("chiSplit", config.chiSplit || "．！？");
-      senData.append("viSplit", config.viSplit || ".!?;");
-      // await axios.post(`${import.meta.env.VITE_SERVER_URL}/api/sen`, senData);
+      senData.append("chiSplit", config.chiSplit || "，．！？");
+      senData.append("viSplit", config.viSplit || ",.!?;");
+      await axios.post(`${import.meta.env.VITE_SERVER_URL}/api/sen`, senData);
 
       // Step 3: Align Chinese text
-      // await axios.post(`${import.meta.env.VITE_SERVER_URL}/api/chi-align`, { id: workdirId });
+      setStep(3);
+      await axios.post(`${import.meta.env.VITE_SERVER_URL}/api/chi-align`, { id: workdirId });
 
       // Step 4: Align Vietnamese text
-      await axios.post(`${import.meta.env.VITE_SERVER_URL}/api/vi-align`, { id: workdirId });
+      setStep(4);
+      const res = await axios.post(`${import.meta.env.VITE_SERVER_URL}/api/vi-align`, {
+        id: workdirId,
+      });
+      console.log(res.data);
 
       // Display result
     } catch (error: any) {
       console.log(error.response.data);
+    } finally {
+      setStep(0);
     }
   };
 
   const progress = +Boolean(file) + +Boolean(chi) + +Boolean(vi);
+
   return (
     <div
       {...props}
-      className={clsx(props.className, "grid grid-cols-3 gap-6 relative overflow-hidden")}
+      className={clsx(
+        props.className,
+        "grid grid-cols-1 lg:grid-cols-3 gap-y-4 lg:gap-6 relative lg:overflow-hidden"
+      )}
     >
-      {/* {loading >= 0 && (
+      {!!step && (
         <ToolLoading
-          stage={loading}
+          step={step}
           className="absolute z-50 rounded-md w-full h-full bg-dark-2 bg-opacity-95"
         />
-      )} */}
-      <div className="col-span-2 bg-dark-2 rounded-lg p-4 overflow-hidden">
+      )}
+      <div className="h-[75vh] col-span-2 bg-dark-2 rounded-lg p-4 overflow-hidden">
         {file ? (
           <div
             className={clsx("h-full flex flex-col justify-between gap-4", tab !== 0 && "hidden")}
@@ -113,11 +132,11 @@ const Tool = ({ ...props }: HTMLAttributes<HTMLDivElement>) => {
           onChange={(e) => setVi(e.target.value)}
         />
       </div>
-      <div className="bg-dark-2 rounded-lg flex flex-col divide-y divide-dark-1">
-        <div className="p-4 grid grid-cols-3 gap-4">
+      <div className="w-full bg-dark-2 rounded-lg flex flex-col divide-y divide-dark-1">
+        <div className="grid grid-cols-3 bg-dark-1">
           <ToolTabButtons tab={tab} setTab={setTab} />
         </div>
-        <div className="flex-1 p-4 flex flex-col gap-6">
+        <div className="flex-1 p-6 flex flex-col gap-6">
           <ToolSettings tab={tab} config={config} setConfig={setConfig} />
         </div>
         <div className="p-4">

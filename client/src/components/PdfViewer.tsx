@@ -6,7 +6,10 @@ import "react-pdf/dist/Page/TextLayer.css";
 
 pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
-const PDFViewer = ({ file, ...props }: { file: File | null } & HTMLAttributes<HTMLDivElement>) => {
+const PDFViewer = ({
+  file,
+  ...props
+}: { file: File | string | null } & HTMLAttributes<HTMLDivElement>) => {
   const [numPages, setNumPages] = useState<number | null>(null);
   const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
     setNumPages(numPages);

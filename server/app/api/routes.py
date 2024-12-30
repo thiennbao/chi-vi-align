@@ -1,4 +1,4 @@
-from flask import request, jsonify
+from flask import request, jsonify, send_file
 import uuid
 import os
 import json
@@ -78,9 +78,9 @@ def sentencize():
       return jsonify({'message': 'Invalid file type, only TXT is allowed'}), 400
     # Validate request splitter
     chi_split = request.form.get('chiSplit')
-    chi_split = rf'[{chi_split}]' if chi_split else r'[^\w]'
+    chi_split = rf'[{chi_split}]' if chi_split else r'[^\w\s]'
     vi_split = request.form.get('viSplit')
-    vi_split = rf'[{vi_split}]' if vi_split else r'[^\w]'
+    vi_split = rf'[{vi_split}]' if vi_split else r'[^\w\s]'
     
     id = request.form.get('id') or uuid.uuid4()
     workdir = f'data/{id}'
@@ -126,7 +126,7 @@ def chi_align():
     
     # Save data
     os.makedirs(workdir, exist_ok=True)
-    with open(f'{workdir}/chi-align.json', 'w') as json_file:
+    with open(f'{workdir}/align.json', 'w') as json_file:
       json.dump(med_alginer.result, json_file)
     
     return jsonify({'message': 'Aligned successfully', 'id': id}), 200
@@ -151,7 +151,7 @@ def vi_align():
     print(f'[*] Processing Vietnamese Aligning: {id}')
     api_aligner = APIAligner()
     try:
-      api_aligner.align(f'{workdir}/vi.json', f'{workdir}/chi-align.json')
+      api_aligner.align(f'{workdir}/vi.json', f'{workdir}/align.json')
     except FileNotFoundError:
       api_aligner.align(f'{workdir}/vi.json', f'{workdir}/ocr.json')
     except FileNotFoundError:
@@ -159,11 +159,34 @@ def vi_align():
     
     # Save data
     os.makedirs(workdir, exist_ok=True)
-    with open(f'{workdir}/vi-align.json', 'w') as json_file:
+    with open(f'{workdir}/result.json', 'w') as json_file:
       json.dump(api_aligner.result, json_file)
     
     return jsonify({'message': 'Aligned successfully', 'id': id}), 200
   
+  except Exception as e:
+    print(f"An error occurred: {e}")
+    return jsonify({'message': 'Internal server error.'}), 500
+  
+  
+
+@api_blueprint.route('/result/<id>/<file>', methods=['GET'])
+def result(id, file):
+  try:
+    if file == 'pdf':
+      return send_file(f'../data/{id}/.pdf', as_attachment=True), 200
+    elif file == 'json':
+      return send_file(f'../data/{id}/result.json', as_attachment=True), 200
+    elif file == 'xlsx':
+      return send_file(f'../data/{id}/result.xlsx', as_attachment=True), 200
+    elif file == 'csv':
+      return send_file(f'../data/{id}/result.csv', as_attachment=True), 200
+    else:    
+      return jsonify({'message': 'Invalid requested file. Try pdf, json, xlsx or csv.'}), 400
+  
+  except OSError as e:
+    print(f"An error occurred: {e}")
+    return jsonify({'message': 'Resource not found'}), 404
   except Exception as e:
     print(f"An error occurred: {e}")
     return jsonify({'message': 'Internal server error.'}), 500

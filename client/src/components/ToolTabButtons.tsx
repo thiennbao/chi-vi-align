@@ -4,28 +4,19 @@ const ToolTabButtons = ({ tab, setTab }: { tab: number; setTab: (tab: number) =>
   return (
     <>
       <button
-        className={clsx(
-          "px-4 py-2 border-2 border-primary rounded-md text-center",
-          tab === 0 ? "bg-primary text-dark-1" : "text-primary"
-        )}
+        className={clsx("p-4 text-sm rounded-t-md border border-dark-2", tab === 0 && "bg-dark-2")}
         onClick={() => setTab(0)}
       >
-        Ocr
+        Ocr pdf
       </button>
       <button
-        className={clsx(
-          "px-4 py-2 border-2 border-secondary rounded-md text-center",
-          tab === 1 ? "bg-secondary text-dark-1" : "text-secondary"
-        )}
+        className={clsx("p-4 text-sm rounded-t-md border border-dark-2", tab === 1 && "bg-dark-2")}
         onClick={() => setTab(1)}
       >
         Chi text
       </button>
       <button
-        className={clsx(
-          "px-4 py-2 border-2 border-tertiary rounded-md text-center",
-          tab === 2 ? "bg-tertiary text-dark-1" : "text-tertiary"
-        )}
+        className={clsx("p-4 text-sm rounded-t-md border border-dark-2", tab === 2 && "bg-dark-2")}
         onClick={() => setTab(2)}
       >
         Vi text

@@ -9,7 +9,7 @@ interface Props {
 
 const ToolSettings = ({ tab, config, setConfig }: Props) => {
   return (
-    <div className="flex-1 p-4 flex flex-col gap-6">
+    <div className="flex-1 flex flex-col gap-6">
       {tab === 0 && (
         <>
           <div>
@@ -25,7 +25,7 @@ const ToolSettings = ({ tab, config, setConfig }: Props) => {
                 className="sr-only peer"
               />
               <div className="relative w-12 h-6 rounded-full bg-primary peer-checked:bg-tertiary after:bg-white after:h-3/4 after:aspect-square after:rounded-full after:transition-all after:absolute after:top-1/2 after:-translate-y-1/2 after:start-[10%] peer-checked:after:start-[90%] peer-checked:after:-translate-x-full" />
-              <span>{config.dir ? "Vertical" : "Horizontal"}</span>
+              <span>{config.dir ? "Horizontal" : "Vertical"}</span>
             </label>
           </div>
           <div>
@@ -51,14 +51,14 @@ const ToolSettings = ({ tab, config, setConfig }: Props) => {
                 type="number"
                 value={config.from || ""}
                 onChange={(e) => setConfig({ ...config, from: Number(e.target.value) || 0 })}
-                placeholder="From page"
+                placeholder="From"
                 className="w-full outline-none border-none rounded bg-dark-3 px-4 py-2"
               />
               <input
                 type="number"
                 value={config.to || ""}
                 onChange={(e) => setConfig({ ...config, to: Number(e.target.value) || 0 })}
-                placeholder="To page"
+                placeholder="To"
                 className="w-full outline-none border-none rounded bg-dark-3 px-4 py-2"
               />
             </div>

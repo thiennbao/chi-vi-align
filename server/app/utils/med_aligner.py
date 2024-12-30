@@ -29,7 +29,7 @@ class MEDAligner:
       aligned = ''
       
       for src_text in src_candidates:
-        src_text = re.sub(r'[A-Z]|[^\w]', '', src_text)
+        src_text = re.sub(r'[A-Za-z0-9]|[^\w]', '', src_text)
         sim_ratio = ratio(src_text, des_text)
         sim_jaro = jaro(src_text, des_text)
         if sim_ratio > self.threshold or sim_jaro > self.threshold:

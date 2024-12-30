@@ -22,13 +22,19 @@ class PDFExtractor:
     
 
   # Call Kandianguji API to OCR image
-  def _ocr_image(self, image_bytes: str, retry: int = 0):
+  def _ocr_image(self, image: dict, page: int, retry: int = 0):
+    image_bytes = image['image']
+    width, height = image['width'], image['height']
     encoded = base64.b64encode(image_bytes).decode('utf-8')
     try:
       payload = { **self.config, 'image': encoded }
       res = requests.post('https://ocr.kandianguji.com/ocr_api', json=payload)
       data = [{
+        'pageId': page,
         'position': line['position'],
+        'relative_pos': {'left': f'{line['position'][0][0] / width * 100}%', 'top': f'{line['position'][1][1] / height * 100}%'},
+        'relative_width': f'{max(abs(line['position'][1][0] - line['position'][0][0]), abs(line['position'][2][0] - line['position'][0][0])) / width * 100}%',
+        'relative_height': f'{max(abs(line['position'][1][1] - line['position'][0][1]), abs(line['position'][2][1] - line['position'][0][1])) / height * 100}%',
         'similar': [word['choices'] for word in line['words']],
         'ocr': line['text'],
       } for line in res.json()['data']['text_lines']]
@@ -53,8 +59,7 @@ class PDFExtractor:
       image_list = page.get_images(full=True)
       if image_list:
         base_image = pdf_file.extract_image(image_list[0][0])
-        image_bytes = base_image['image']
-        data = self._ocr_image(image_bytes, retry=3)
+        data = self._ocr_image(base_image, page_index, retry=3)
         self.result += data
       
     # Clear temp
