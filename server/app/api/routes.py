@@ -8,6 +8,7 @@ from app.utils.pdf_extractor import PDFExtractor
 from app.utils.sentencizer import Sentencizer
 from app.utils.med_aligner import MEDAligner
 from app.utils.api_aligner import APIAligner
+from app.utils.xlsx_exporter import XLSXExporter
 
 
 
@@ -180,6 +181,9 @@ def result(id, file):
     elif file == 'json':
       return send_file(f'../data/{id}/result.json', as_attachment=True), 200
     elif file == 'xlsx':
+      workdir = f'data/{id}'
+      xlsx_exporter = XLSXExporter()
+      xlsx_exporter.export(workdir)
       return send_file(f'../data/{id}/result.xlsx', as_attachment=True), 200
     else:    
       return jsonify({'message': 'Invalid requested file. Try pdf, json, or xlsx.'}), 400

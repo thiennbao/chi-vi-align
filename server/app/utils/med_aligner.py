@@ -5,7 +5,7 @@ from collections import Counter
 import re
 
 class MEDAligner:
-  def __init__(self, threshold: float = 0.5, candidates: float = 0.02):
+  def __init__(self, threshold: float = 0.5, candidates: int = 200):
     self.threshold = threshold
     self.candidates = candidates
     self.result = []
@@ -24,7 +24,7 @@ class MEDAligner:
       des_text = des_box['ocr']
       pos = i / len(des)
       
-      candidates_range = range(max(int((pos - self.candidates / 2) * len(src)), 0), min(int((pos + self.candidates / 2) * len(src)), len(src)))
+      candidates_range = range(max(int(pos * len(src) - self.candidates / 2), 0), min(int(pos * len(src) + self.candidates / 2), len(src)))
       src_candidates = [src[i] for i in candidates_range]
       aligned = ''
       

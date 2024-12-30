@@ -5,7 +5,7 @@ import copy
 import time
 
 class APIAligner():
-  def __init__(self, candidates: float = 0.02):
+  def __init__(self, candidates: int = 200):
     self.candidates = candidates
     self.result = []
     
@@ -33,11 +33,11 @@ class APIAligner():
 
     # Match and translate
     for i, des_box in enumerate(des):
-      if i == 10: break
+      print(i, end=' ', flush=True)
       des_text = des_box['ocr']
       pos = i / len(des)
       
-      candidates_range = range(max(int((pos - self.candidates / 2) * len(src)), 0), min(int((pos + self.candidates / 2) * len(src)), len(src)))
+      candidates_range = range(max(int(pos * len(src) - self.candidates / 2), 0), min(int(pos * len(src) + self.candidates / 2), len(src)))
       src_candidates = [f'{i} {src[i]}' for i in candidates_range]
       
       matched = self._match_and_trans(des_text, src_candidates, retry=5)
@@ -72,4 +72,4 @@ class APIAligner():
       if retry > 0:
         return self._match_and_trans(text, candidate_texts, retry - 1)
       else:
-        return None
+        return ''

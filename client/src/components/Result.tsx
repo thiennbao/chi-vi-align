@@ -49,9 +49,13 @@ const Result = ({ id, ...props }: { id: string } & HTMLAttributes<HTMLDivElement
           )}
         </div>
         <div className="p-4">
-          <button className="w-full h-10 rounded relative overflow-hidden bg-gradient-primary">
+          <a
+            href={`${import.meta.env.VITE_SERVER_URL}/api/result/${id}/xlsx`}
+            download
+            className="w-full h-10 rounded relative overflow-hidden bg-gradient-primary flex justify-center items-center"
+          >
             Export data
-          </button>
+          </a>
         </div>
       </div>
     </div>

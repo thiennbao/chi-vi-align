@@ -5,3 +5,4 @@ requests
 PyMuPDF
 Levenshtein
 google-generativeai
+XlsxWriter
