@@ -1,11 +1,13 @@
 import clsx from "clsx";
 import { HTMLAttributes, useState } from "react";
+import { useCookies } from "react-cookie";
 import ToolTabButtons from "./ToolTabButtons";
 import PdfInput from "./PdfInput";
 import ToolSettings from "./ToolSettings";
 import PDFViewer from "./PdfViewer";
 import axios from "axios";
 import ToolLoading from "./ToolLoading";
+import { useNavigate } from "react-router-dom";
 
 export interface Config {
   dir?: boolean;
@@ -17,6 +19,9 @@ export interface Config {
 }
 
 const Tool = ({ ...props }: HTMLAttributes<HTMLDivElement>) => {
+  const [cookies, setCookie] = useCookies(["storage"]);
+  const navigate = useNavigate();
+
   const [tab, setTab] = useState(0);
   const [file, setFile] = useState<File>();
   const [chi, setChi] = useState("");
@@ -62,14 +67,14 @@ const Tool = ({ ...props }: HTMLAttributes<HTMLDivElement>) => {
 
       // Step 4: Align Vietnamese text
       setStep(4);
-      const res = await axios.post(`${import.meta.env.VITE_SERVER_URL}/api/vi-align`, {
-        id: workdirId,
-      });
-      console.log(res.data);
+      await axios.post(`${import.meta.env.VITE_SERVER_URL}/api/vi-align`, { id: workdirId });
 
-      // Display result
+      // Save id
+      const storage = cookies.storage || [];
+      setCookie("storage", JSON.stringify([...storage, { id: workdirId, name: file?.name }]));
+      navigate(`/result/${workdirId}`);
     } catch (error: any) {
-      console.log(error.response.data);
+      console.log(error);
     } finally {
       setStep(0);
     }

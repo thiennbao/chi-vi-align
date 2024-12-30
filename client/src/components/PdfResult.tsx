@@ -66,7 +66,7 @@ const PDFResult = ({
                 ))}
               <Page
                 pageNumber={index + 1}
-                className="[&_.react-pdf\\_\\_Page\\_\\_textContent]:hidden [&_.react-pdf\\_\\_Page\\_\\_annotations]:hidden"
+                className="w-full [&_.react-pdf\\_\\_Page\\_\\_textContent]:hidden [&_.react-pdf\\_\\_Page\\_\\_annotations]:hidden"
               />
             </div>
           ))}

@@ -53,6 +53,8 @@ def ocr():
     
     # Save data
     os.makedirs(workdir, exist_ok=True)
+    file.seek(0)
+    file.save(f'{workdir}/.pdf')
     with open(f'{workdir}/ocr.json', 'w') as json_file:
       json.dump(pdf_extractor.result, json_file)
 
@@ -179,10 +181,8 @@ def result(id, file):
       return send_file(f'../data/{id}/result.json', as_attachment=True), 200
     elif file == 'xlsx':
       return send_file(f'../data/{id}/result.xlsx', as_attachment=True), 200
-    elif file == 'csv':
-      return send_file(f'../data/{id}/result.csv', as_attachment=True), 200
     else:    
-      return jsonify({'message': 'Invalid requested file. Try pdf, json, xlsx or csv.'}), 400
+      return jsonify({'message': 'Invalid requested file. Try pdf, json, or xlsx.'}), 400
   
   except OSError as e:
     print(f"An error occurred: {e}")
