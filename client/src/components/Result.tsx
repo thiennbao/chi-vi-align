@@ -52,7 +52,7 @@ const Result = ({ id, ...props }: { id: string } & HTMLAttributes<HTMLDivElement
           <a
             href={`${import.meta.env.VITE_SERVER_URL}/api/result/${id}/xlsx`}
             download
-            className="w-full h-10 rounded relative overflow-hidden bg-gradient-primary flex justify-center items-center"
+            className="w-full h-10 rounded relative overflow-hidden bg-gradient-primary text-dark-1 flex justify-center items-center"
           >
             Export data
           </a>

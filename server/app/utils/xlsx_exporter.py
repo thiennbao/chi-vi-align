@@ -50,14 +50,14 @@ class XLSXExporter():
     # Write data
     for row_num, box in enumerate(data, start=1):
       worksheet.write(row_num, 0, str(box['position']))
-      if box['chi_char_align']:
+      if box['chi_aligned']:
         ocr_format = []
         for i in range(len(box['ocr_char_align'])):
           ocr_format.extend((colors[box['color'][i]], box['ocr_char_align'][i]))
         worksheet.write_rich_string(row_num, 1, *ocr_format)
       else:
         worksheet.write(row_num, 1, box['ocr'], colors['green'])
-      worksheet.write(row_num, 2, box['chi_char_align'] or '[No text matched]')
+      worksheet.write(row_num, 2, box['chi_aligned'] or '[No text matched]')
       worksheet.write(row_num, 3, box['vi_aligned'].replace('. -', '') if box['vi_aligned'] else '[No text matched]')
       # Coloring ocr
     workbook.close()
