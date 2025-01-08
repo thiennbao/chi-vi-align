@@ -8,19 +8,25 @@ class APIAligner():
   def __init__(self, candidates: int = 200):
     self.candidates = candidates
     self.result = []
+    self.api_keys = json.loads(os.getenv('GEMINI_APIKEYS'))
+    self.active_key_idx = -1
+    self.__swap_key()
     
-    genai.configure(api_key=os.getenv('GEMINI_APIKEY'))
+
+  def __swap_key(self):
+    self.active_key_idx = 0 if self.active_key_idx + 1 == len(self.api_keys) else self.active_key_idx + 1
+    genai.configure(api_key=self.api_keys[self.active_key_idx])
     self.model = genai.GenerativeModel(
-      model_name="gemini-2.0-flash-exp",
+      model_name='gemini-2.0-flash-exp',
       generation_config={
-      "temperature": 0,
-      "top_p": 0.95,
-      "top_k": 40,
-      "max_output_tokens": 1024,
-      "response_mime_type": "text/plain",
+        'temperature': 0,
+        'top_p': 0.95,
+        'top_k': 40,
+        'max_output_tokens': 1024,
+        'response_mime_type': 'text/plain',
       }
     )
-    
+    print(f'Swap key: {self.api_keys[self.active_key_idx]}')
 
 
   def align(self, src_file_path: str, des_file_path: str):
@@ -33,7 +39,7 @@ class APIAligner():
 
     # Match and translate
     for i, des_box in enumerate(des):
-      print(i, end=' ', flush=True)
+      print(f'Box {i}...', end=' ', flush=True)
       des_text = des_box['ocr']
       pos = i / len(des)
       
@@ -48,6 +54,7 @@ class APIAligner():
       except Exception:
         self.result[i]['vi_aligned'] = ''
         self.result[i]['vi_trans'] = ''
+      print(self.result[i]['vi_aligned'] or '[No text matched]')
         
   def _match_and_trans(self, text: str, candidate_texts: list[str], retry: int = 0):
     try:
@@ -64,12 +71,13 @@ class APIAligner():
       )
       return json.loads(response.text[7:-4])
     except json.decoder.JSONDecodeError as e:
-      print(f"An error occurred: {e}")
+      print(f'An error occurred: {e}...', end=' ', flush=True)
       return None
     except Exception as e:
-      print(f"An error occurred: {e}")
+      print(f'An error occurred: {e}...', end=' ', flush=True)
       time.sleep(5)
       if retry > 0:
         return self._match_and_trans(text, candidate_texts, retry - 1)
       else:
+        self.__swap_key()
         return ''

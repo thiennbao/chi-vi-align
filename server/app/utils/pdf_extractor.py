@@ -40,7 +40,7 @@ class PDFExtractor:
       } for line in res.json()['data']['text_lines']]
       return data
     except Exception as e:
-      print(f"An error occurred: {e}")
+      print(f'An error occurred: {e}...', end=' ', flush=True)
       return self._ocr_image(image_bytes, retry - 1) if retry > 0 else []
     
 
@@ -55,6 +55,7 @@ class PDFExtractor:
     pdf_file = fitz.open(file_path)
     page_range = range(self.from_page - 1, self.to_page if self.to_page else len(pdf_file))
     for page_index in page_range:
+      print(f'Page {page_index + 1}...', end=' ', flush=True)
       page = pdf_file.load_page(page_index)
       image_list = page.get_images(full=True)
       if image_list:
